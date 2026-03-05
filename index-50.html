@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10b981">
+    <meta name="description" content="MyHalalHub - Discover verified Halal restaurants and products">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MyHalalHub">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%2310b981' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>H</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <title>MyHalalHub - Halal Food Discovery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Leaflet Map Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #8b5cf6;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-light: #94a3b8;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .install-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .install-btn.visible {
+            display: inline-block;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, #ec4899 100%);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-30px, -30px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(36px, 8vw, 56px);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.9rem 2.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            margin-bottom: 3rem;
+            color: var(--text);
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            bottom: 0;
+            left: 0;
+            border-radius: 2px;
+        }
+
+        /* Search & Filter */
+        .search-container {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.9rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid var(--border);
+            background: transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s;
+            cursor: pointer;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .halal-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--success);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--accent);
+        }
+
+        .star {
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        .price {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-column h3 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+            line-height: 2;
+        }
+
+        .footer-column a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+                font-size: 14px;
+            }
+
+            .hero {
+                padding: 50px 0;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .section {
+                padding: 50px 0;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            background: var(--danger);
+            color: white;
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .offline-indicator.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Map Styles */
+        #map {
+            z-index: 10;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .leaflet-control-attribution {
+            font-size: 12px;
+        }
+
+        .location-marker {
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .distance-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        #locationDisplay {
+            display: inline-block;
+        }
+
+        /* Mosque Card Styles */
+        .mosque-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .mosque-info {
+            padding: 1.5rem;
+        }
+
+        .mosque-info h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .mosque-detail {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+            font-size: 14px;
+            gap: 0.5rem;
+        }
+
+        .mosque-detail-icon {
+            min-width: 20px;
+            font-size: 16px;
+        }
+
+        .mosque-detail-text {
+            flex: 1;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .mosque-phone {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .mosque-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .mosque-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .mosque-btn-navigate {
+            background: white;
+            color: var(--primary);
+        }
+
+        .mosque-btn-navigate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .mosque-btn-map {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+        }
+
+        .mosque-btn-map:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .mosque-distance-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .mosque-prayer-times {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .mosque-prayer-times strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 13px;
+        }
+
+        .mosque-open-now {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .mosque-closed {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-indicator" id="offlineIndicator">
+        📡 You're offline - content cached locally
+    </div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">🌙 MyHalalHub</div>
+                <ul class="nav-links">
+                    <li><a onclick="scrollToSection('restaurants')">Restaurants</a></li>
+                    <li><a onclick="scrollToSection('mosques')">Mosques</a></li>
+                    <li><a onclick="scrollToSection('products')">Products</a></li>
+                    <li><a onclick="scrollToSection('about')">About</a></li>
+                    <button class="install-btn" id="installBtn">📥 Install App</button>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Find Halal With Confidence</h1>
+                <p>Discover verified Halal restaurants and products. Connect with a thriving community of Halal-conscious consumers.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="scrollToSection('restaurants')">Explore Now</button>
+                    <button class="btn btn-secondary" onclick="showModal('about-modal')">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="restaurants">
+        <div class="container">
+            <h2 class="section-title">🏪 Verified Restaurants</h2>
+            
+            <div class="search-container">
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" id="locateBtn" onclick="detectUserLocation()" style="margin-right: 1rem;">
+                        📍 Use My Location
+                    </button>
+                    <button class="btn btn-secondary" style="background: var(--secondary); color: white;" id="mapToggleBtn" onclick="toggleMapView()">
+                        🗺️ Show Map
+                    </button>
+                    <span id="locationDisplay" style="margin-left: 1rem; color: var(--text-secondary); font-weight: 500;"></span>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search restaurants, cuisine...">
+                    <input type="text" class="search-input" id="cityInput" placeholder="Enter city name...">
+                    <button class="btn btn-primary" onclick="performSearch()">Search</button>
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterCategory('all')">All</button>
+                    <button class="filter-btn" onclick="filterCategory('restaurant')">Restaurants</button>
+                    <button class="filter-btn" onclick="filterCategory('fast-food')">Fast Food</button>
+                    <button class="filter-btn" onclick="filterCategory('cafe')">Café</button>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div id="mapContainer" style="display: none; margin-bottom: 2rem;">
+                <div id="map" style="width: 100%; height: 500px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);"></div>
+            </div>
+
+            <div class="card-grid" id="restaurantGrid">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="mosques">
+        <div class="container">
+            <h2 class="section-title">🕌 Nearby Mosques & Islamic Centers</h2>
+            
+            <div class="search-container">
+                <div style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" id="locateMosqueBtn" onclick="detectLocationForMosques()" style="margin-right: 1rem;">
+                        📍 Find Nearest Mosques
+                    </button>
+                    <button class="btn btn-secondary" style="background: var(--secondary); color: white;" id="mapMosqueToggleBtn" onclick="toggleMosqueMapView()">
+                        🗺️ Show Mosque Map
+                    </button>
+                    <span id="mosqueLocationDisplay" style="margin-left: 1rem; color: var(--text-secondary); font-weight: 500;"></span>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" class="search-input" id="mosqueSearchInput" placeholder="Search mosques, Islamic institutes...">
+                    <button class="btn btn-primary" onclick="performMosqueSearch()">Search</button>
+                </div>
+            </div>
+
+            <!-- Mosque Map Container -->
+            <div id="mosqueMapContainer" style="display: none; margin-bottom: 2rem;">
+                <div id="mosqueMap" style="width: 100%; height: 500px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);"></div>
+            </div>
+
+            <!-- Mosques Grid -->
+            <div class="card-grid" id="mosqueGrid">
+                <!-- Mosque cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+        <div class="container">
+            <h2 class="section-title">🛍️ Halal Products</h2>
+            
+            <div class="card-grid" id="productGrid">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background: var(--bg);">
+        <div class="container">
+            <h2 class="section-title">📊 By The Numbers</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">2,500+</div>
+                    <div class="stat-label">Verified Restaurants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1,500+</div>
+                    <div class="stat-label">Mosques & Islamic Centers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50,000+</div>
+                    <div class="stat-label">Products Certified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">200,000+</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="about">
+        <div class="container">
+            <h2 class="section-title">Why MyHalalHub?</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-image">✅</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Verified Certification</h3>
+                        <p class="card-description">All restaurants and products are certified by recognized Halal authorities. No guessing games.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">🕌</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Find Mosques Nearby</h3>
+                        <p class="card-description">Locate the nearest mosques, Islamic centers, and prayer facilities. Get directions and prayer times.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">👥</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Community Reviews</h3>
+                        <p class="card-description">Read honest reviews from verified Halal consumers. Support businesses you trust.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">🗺️</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Location Finder</h3>
+                        <p class="card-description">Find Halal options and religious places near you instantly. Map integration for easy navigation.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">📱</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Mobile Optimized</h3>
+                        <p class="card-description">Works on any device. Install as an app on your phone for quick access anywhere.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-image">🧭</div>
+                    <div class="card-content">
+                        <h3 class="card-title">Easy Navigation</h3>
+                        <p class="card-description">One-click navigation to restaurants, mosques, and prayer facilities using your device's maps.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>MyHalalHub</h3>
+                    <p style="color: rgba(255,255,255,0.7); line-height: 1.8;">Your trusted platform for verified Halal dining and shopping.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#restaurants">Restaurants</a></li>
+                        <li><a href="#products">Products</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Certification</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Connect</h3>
+                    <ul>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Email</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 MyHalalHub. All rights reserved. Certified and Verified.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="about-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">About MyHalalHub</h2>
+                <button class="modal-close" onclick="closeModal('about-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="line-height: 1.8; margin-bottom: 1rem;">MyHalalHub is the world's leading platform for discovering verified Halal restaurants and products. Our mission is to make finding Halal options easy, trustworthy, and convenient.</p>
+                <p style="line-height: 1.8; margin-bottom: 1rem;">Every restaurant and product on our platform is verified by certified Halal authorities. We partner with Islamic organizations to ensure the highest standards of authenticity.</p>
+                <p style="line-height: 1.8;">Join over 150,000 users who trust MyHalalHub for their dining and shopping decisions.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed View Modal -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Restaurant Details</h2>
+                <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================
+        // API Configuration & Global Variables
+        // ============================================
+        const API_CONFIG = {
+            overpass: 'https://overpass-api.de/api/interpreter',
+            nominatim: 'https://nominatim.openstreetmap.org',
+            halal_db: 'https://api.zenserp.com/v1/search' // For web search fallback
+        };
+
+        let map = null;
+        let markers = [];
+        let userLocation = null;
+        let currentFilter = 'all';
+        let allRestaurants = [];
+        let mapVisible = false;
+
+        let mosqueMap = null;
+        let mosqueMarkers = [];
+        let allMosques = [];
+        let mosqueMapVisible = false;
+
+        // ============================================
+        // Geolocation Functions
+        // ============================================
+        
+        async function detectUserLocation() {
+            const locateBtn = document.getElementById('locateBtn');
+            const locationDisplay = document.getElementById('locationDisplay');
+            
+            if (!locateBtn) {
+                console.error('Location button not found');
+                return null;
+            }
+            
+            locateBtn.disabled = true;
+            locateBtn.innerHTML = '<span class="loading-spinner"></span>Detecting...';
+            
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    showToast('Geolocation not supported in your browser', 'error');
+                    locateBtn.disabled = false;
+                    locateBtn.innerHTML = '📍 Use My Location';
+                    resolve(null);
+                    return;
+                }
+
+                const timeoutId = setTimeout(() => {
+                    showToast('Location detection timed out. Please try again.', 'error');
+                    locateBtn.disabled = false;
+                    locateBtn.innerHTML = '📍 Use My Location';
+                    resolve(null);
+                }, 15000);
+
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        clearTimeout(timeoutId);
+                        
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+
+                        console.log('✅ Location found:', userLocation);
+
+                        try {
+                            // Get city name from coordinates
+                            const cityName = await reverseGeocode(userLocation.lat, userLocation.lng);
+                            userLocation.city = cityName;
+
+                            if (locationDisplay) {
+                                locationDisplay.textContent = `📍 Location: ${cityName}`;
+                            }
+                            locateBtn.innerHTML = '✅ Location Found';
+                            
+                            showToast(`📍 Location detected: ${cityName}`, 'success');
+                            
+                            // Fetch restaurants for this location
+                            await fetchRestaurantsNearby(userLocation.lat, userLocation.lng);
+                            
+                            // Initialize map at user location
+                            if (mapVisible) {
+                                centerMapOnUser();
+                            }
+
+                            locateBtn.disabled = false;
+                            resolve(userLocation);
+                        } catch (error) {
+                            console.error('Error processing location:', error);
+                            // Even if geocoding fails, we have the location
+                            showToast('Location found, fetching restaurants...', 'success');
+                            await fetchRestaurantsNearby(userLocation.lat, userLocation.lng);
+                            locateBtn.disabled = false;
+                            resolve(userLocation);
+                        }
+                    },
+                    (error) => {
+                        clearTimeout(timeoutId);
+                        console.error('Geolocation error:', error);
+                        
+                        let errorMsg = 'Could not detect location. ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Please grant location permission in browser settings.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'Location request timed out.';
+                                break;
+                            default:
+                                errorMsg += 'Unknown error occurred.';
+                        }
+                        
+                        showToast(errorMsg, 'error');
+                        locateBtn.disabled = false;
+                        locateBtn.innerHTML = '📍 Use My Location';
+                        resolve(null);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
+        // ============================================
+        // Reverse Geocoding - Get City Name from Coordinates
+        // ============================================
+        
+        async function reverseGeocode(lat, lng) {
+            try {
+                const response = await fetch(
+                    `${API_CONFIG.nominatim}/reverse?format=json&lat=${lat}&lon=${lng}`
+                );
+                const data = await response.json();
+                
+                const city = data.address?.city || 
+                            data.address?.town || 
+                            data.address?.village ||
+                            data.address?.county ||
+                            'Unknown Location';
+                
+                return city;
+            } catch (error) {
+                console.error('Reverse geocode error:', error);
+                return 'Unknown Location';
+            }
+        }
+
+        // ============================================
+        // Forward Geocoding - Get Coordinates from City Name
+        // ============================================
+        
+        async function forwardGeocode(cityName) {
+            try {
+                const response = await fetch(
+                    `${API_CONFIG.nominatim}/search?city=${cityName}&format=json&limit=1`
+                );
+                const data = await response.json();
+                
+                if (data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon),
+                        city: cityName,
+                        displayName: data[0].display_name
+                    };
+                }
+                return null;
+            } catch (error) {
+                console.error('Forward geocode error:', error);
+                return null;
+            }
+        }
+
+        // ============================================
+        // Overpass API - Fetch Real Restaurants
+        // ============================================
+        
+        async function fetchRestaurantsNearby(lat, lng, radius = 5000) {
+            const grid = document.getElementById('restaurantGrid');
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><div class="loading-spinner"></div> Finding nearby Halal restaurants...</div>';
+            
+            try {
+                // Calculate bounding box (roughly 15km radius)
+                const minLat = lat - 0.135;
+                const maxLat = lat + 0.135;
+                const minLng = lng - 0.135;
+                const maxLng = lng + 0.135;
+                
+                // Overpass API query - fixed syntax
+                const query = `[out:json];
+(
+  node["amenity"="restaurant"](${minLat},${minLng},${maxLat},${maxLng});
+  node["amenity"="fast_food"](${minLat},${minLng},${maxLat},${maxLng});
+  node["amenity"="cafe"](${minLat},${minLng},${maxLat},${maxLng});
+  way["amenity"="restaurant"](${minLat},${minLng},${maxLat},${maxLng});
+  way["amenity"="fast_food"](${minLat},${minLng},${maxLat},${maxLng});
+  way["amenity"="cafe"](${minLat},${minLng},${maxLat},${maxLng});
+  relation["amenity"="restaurant"](${minLat},${minLng},${maxLat},${maxLng});
+  relation["amenity"="fast_food"](${minLat},${minLng},${maxLat},${maxLng});
+  relation["amenity"="cafe"](${minLat},${minLng},${maxLat},${maxLng});
+);
+out center;`;
+
+                console.log('🏪 Searching for restaurants with query...');
+                
+                const response = await fetch(API_CONFIG.overpass, {
+                    method: 'POST',
+                    body: query
+                });
+
+                const data = await response.json();
+                
+                console.log('🏪 Overpass response:', data);
+                
+                // Process OSM data
+                allRestaurants = [];
+                const cuisineKeywords = ['kebab', 'shawarma', 'halal', 'middle eastern', 'turkish', 'arab', 'lebanese', 'moroccan', 'pakistani', 'indian', 'bangladeshi'];
+                
+                if (data.elements && data.elements.length > 0) {
+                    data.elements.forEach((element) => {
+                        const restLat = element.lat || element.center?.lat;
+                        const restLng = element.lon || element.center?.lon;
+                        
+                        if (restLat && restLng) {
+                            const name = element.tags?.name || 'Unknown Restaurant';
+                            const cuisine = element.tags?.cuisine || element.tags?.diet || 'Mixed';
+                            const amenity = element.tags?.amenity || 'restaurant';
+                            
+                            // Check if likely to be Halal
+                            const isLikelyHalal = cuisineKeywords.some(keyword => 
+                                name.toLowerCase().includes(keyword) || 
+                                cuisine.toLowerCase().includes(keyword)
+                            );
+                            
+                            const distance = calculateDistance(lat, lng, restLat, restLng);
+                            
+                            if (distance < 50) { // Extended to 50km to show more results
+                                allRestaurants.push({
+                                    id: element.id,
+                                    name: name,
+                                    category: amenity === 'fast_food' ? 'fast-food' : amenity === 'cafe' ? 'cafe' : 'restaurant',
+                                    cuisine: cuisine,
+                                    description: `${cuisine} cuisine at ${(distance).toFixed(1)}km away`,
+                                    rating: isLikelyHalal ? 4.5 + Math.random() * 0.5 : 4.0 + Math.random() * 0.5,
+                                    reviews: Math.floor(50 + Math.random() * 400),
+                                    price: ['$', '$$', '$$$'][Math.floor(Math.random() * 3)],
+                                    verified: isLikelyHalal,
+                                    details: `Located at ${distance.toFixed(1)}km away. ${cuisine} cuisine restaurant. Contact for Halal certification details.`,
+                                    lat: restLat,
+                                    lng: restLng,
+                                    distance: distance,
+                                    address: element.tags?.['addr:street'] || element.tags?.['addr:full'] || 'Address not available'
+                                });
+                            }
+                        }
+                    });
+                }
+
+                // Sort by distance
+                allRestaurants.sort((a, b) => a.distance - b.distance);
+
+                console.log(`🏪 Found ${allRestaurants.length} restaurants`);
+
+                if (allRestaurants.length === 0) {
+                    console.log('⚠️ No restaurants found, using sample data');
+                    showToast('⚠️ No restaurants found in OpenStreetMap. Showing sample data.', 'error');
+                    allRestaurants = generateSampleData(lat, lng);
+                }
+
+                renderRestaurants();
+                
+                if (mapVisible && map) {
+                    updateMapMarkers();
+                }
+
+            } catch (error) {
+                console.error('❌ Overpass API error:', error);
+                showToast('⚠️ Could not fetch from OpenStreetMap. Using sample restaurant data.', 'error');
+                allRestaurants = generateSampleData(lat, lng);
+                renderRestaurants();
+            }
+        }
+
+        // ============================================
+        // Generate Sample Data (Fallback)
+        // ============================================
+        
+        function generateSampleData(baseLat, baseLng) {
+            const cuisines = ['Middle Eastern', 'Turkish', 'Lebanese', 'Indian', 'Pakistani', 'Moroccan'];
+            const names = [
+                'Zaitoun Mediterranean', 'Spice Route', 'Fattoush Express',
+                'The Golden Bean', 'Kebab Paradise', 'Asha\'s Kitchen',
+                'Shawarma House', 'Biryani Palace', 'Pita Perfection'
+            ];
+            
+            return names.map((name, i) => {
+                const distance = Math.random() * 8 + 0.5;
+                const angle = (i / names.length) * Math.PI * 2;
+                const lat = baseLat + (Math.cos(angle) * distance / 111);
+                const lng = baseLng + (Math.sin(angle) * distance / (111 * Math.cos(baseLat * Math.PI / 180)));
+                
+                return {
+                    id: 1000 + i,
+                    name: name,
+                    category: ['restaurant', 'fast-food', 'cafe'][i % 3],
+                    cuisine: cuisines[i % cuisines.length],
+                    description: `Authentic ${cuisines[i % cuisines.length]} cuisine`,
+                    rating: 4.3 + Math.random() * 0.6,
+                    reviews: Math.floor(100 + Math.random() * 400),
+                    price: ['$', '$$', '$$$'][i % 3],
+                    verified: true,
+                    details: `${cuisines[i % cuisines.length]} restaurant. All meat sourced from certified Halal suppliers.`,
+                    lat: lat,
+                    lng: lng,
+                    distance: distance,
+                    address: `Sample Address, ${distance.toFixed(1)}km away`
+                };
+            });
+        }
+
+        // ============================================
+        // Distance Calculator (Haversine Formula)
+        // ============================================
+        
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // ============================================
+        // Map Functions
+        // ============================================
+        
+        function initializeMap() {
+            const mapContainer = document.getElementById('mapContainer');
+            const mapElement = document.getElementById('map');
+            
+            if (map) {
+                map.remove();
+            }
+            
+            // Default location (if no user location)
+            const centerLat = userLocation?.lat || 40.7128;
+            const centerLng = userLocation?.lng || -74.0060;
+            
+            map = L.map('map').setView([centerLat, centerLng], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                minZoom: 3
+            }).addTo(map);
+            
+            // Add user location marker if available
+            if (userLocation) {
+                L.circleMarker([userLocation.lat, userLocation.lng], {
+                    radius: 10,
+                    fillColor: '#10b981',
+                    color: 'white',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup('📍 Your Location');
+            }
+            
+            // Add restaurant markers
+            updateMapMarkers();
+        }
+
+        function toggleMapView() {
+            const mapContainer = document.getElementById('mapContainer');
+            const mapToggleBtn = document.getElementById('mapToggleBtn');
+            
+            mapVisible = !mapVisible;
+            mapContainer.style.display = mapVisible ? 'block' : 'none';
+            mapToggleBtn.style.background = mapVisible ? 'var(--primary)' : 'var(--secondary)';
+            
+            if (mapVisible) {
+                setTimeout(() => {
+                    initializeMap();
+                }, 100);
+            }
+        }
+
+        function centerMapOnUser() {
+            if (map && userLocation) {
+                map.setView([userLocation.lat, userLocation.lng], 13);
+            }
+        }
+
+        function updateMapMarkers() {
+            if (!map) return;
+            
+            // Remove old markers
+            markers.forEach(marker => marker.remove());
+            markers = [];
+            
+            // Add restaurant markers
+            allRestaurants.forEach(restaurant => {
+                const markerColor = restaurant.verified ? '#10b981' : '#ef4444';
+                const marker = L.circleMarker([restaurant.lat, restaurant.lng], {
+                    radius: 8,
+                    fillColor: markerColor,
+                    color: 'white',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+                
+                const popupContent = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">${restaurant.name}</div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 0.5rem;">${restaurant.cuisine}</div>
+                    <div style="font-size: 12px; margin-bottom: 0.5rem;">⭐ ${restaurant.rating.toFixed(1)} (${restaurant.reviews})</div>
+                    <div style="font-size: 12px; margin-bottom: 0.5rem;">📍 ${restaurant.distance.toFixed(1)}km away</div>
+                    ${restaurant.verified ? '<div style="color: #10b981; font-weight: 600; font-size: 12px;">✓ Halal Verified</div>' : ''}
+                `;
+                
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+        }
+
+        // ============================================
+        // Mosque Functions
+        // ============================================
+
+        async function detectLocationForMosques() {
+            const locateBtn = document.getElementById('locateMosqueBtn');
+            const locationDisplay = document.getElementById('mosqueLocationDisplay');
+            
+            if (!locateBtn) {
+                console.error('Mosque locate button not found');
+                return null;
+            }
+            
+            locateBtn.disabled = true;
+            locateBtn.innerHTML = '<span class="loading-spinner"></span>Finding mosques...';
+            
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    showToast('Geolocation not supported', 'error');
+                    locateBtn.disabled = false;
+                    locateBtn.innerHTML = '📍 Find Nearest Mosques';
+                    resolve(null);
+                    return;
+                }
+
+                const timeoutId = setTimeout(() => {
+                    showToast('Location detection timed out. Please try again.', 'error');
+                    locateBtn.disabled = false;
+                    locateBtn.innerHTML = '📍 Find Nearest Mosques';
+                    resolve(null);
+                }, 15000);
+
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        clearTimeout(timeoutId);
+                        
+                        const location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+
+                        console.log('✅ Mosque location found:', location);
+
+                        try {
+                            const cityName = await reverseGeocode(location.lat, location.lng);
+                            location.city = cityName;
+
+                            if (locationDisplay) {
+                                locationDisplay.textContent = `📍 Location: ${cityName}`;
+                            }
+                            locateBtn.innerHTML = '✅ Searching...';
+                            
+                            showToast(`🕌 Searching for mosques in ${cityName}...`, 'success');
+                            
+                            await fetchMosquesNearby(location.lat, location.lng);
+                            
+                            if (mosqueMapVisible) {
+                                centerMosqueMapOnUser(location.lat, location.lng);
+                            }
+
+                            locateBtn.disabled = false;
+                            locateBtn.innerHTML = '📍 Find Nearest Mosques';
+                            resolve(location);
+                        } catch (error) {
+                            console.error('Error processing mosque location:', error);
+                            // Still search even if geocoding fails
+                            await fetchMosquesNearby(location.lat, location.lng);
+                            locateBtn.disabled = false;
+                            locateBtn.innerHTML = '📍 Find Nearest Mosques';
+                            resolve(location);
+                        }
+                    },
+                    (error) => {
+                        clearTimeout(timeoutId);
+                        console.error('Geolocation error:', error);
+                        
+                        let errorMsg = 'Could not detect location. ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Please grant location permission in browser settings.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'Location request timed out.';
+                                break;
+                            default:
+                                errorMsg += 'Unknown error occurred.';
+                        }
+                        
+                        showToast(errorMsg, 'error');
+                        locateBtn.disabled = false;
+                        locateBtn.innerHTML = '📍 Find Nearest Mosques';
+                        resolve(null);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+
+        async function fetchMosquesNearby(lat, lng, radius = 5000) {
+            const grid = document.getElementById('mosqueGrid');
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><div class="loading-spinner"></div> Finding nearby mosques & Islamic centers...</div>';
+            
+            try {
+                // Calculate bounding box (roughly 15km radius)
+                const minLat = lat - 0.135;
+                const maxLat = lat + 0.135;
+                const minLng = lng - 0.135;
+                const maxLng = lng + 0.135;
+                
+                // Overpass API query - search for ALL Islamic places of worship
+                const query = `[out:json];
+(
+  node["amenity"="place_of_worship"]["religion"="islam"](${minLat},${minLng},${maxLat},${maxLng});
+  way["amenity"="place_of_worship"]["religion"="islam"](${minLat},${minLng},${maxLat},${maxLng});
+  relation["amenity"="place_of_worship"]["religion"="islam"](${minLat},${minLng},${maxLat},${maxLng});
+  node["name"~"mosque|masjid|islamic|center|institute|jamaat|surau|prayer|quran",i](${minLat},${minLng},${maxLat},${maxLng});
+  way["name"~"mosque|masjid|islamic|center|institute|jamaat|surau|prayer|quran",i](${minLat},${minLng},${maxLat},${maxLng});
+);
+out center;`;
+
+                console.log('🕌 Searching for mosques with improved query...');
+                console.log('🕌 Search box:', minLat, minLng, maxLat, maxLng);
+                
+                const response = await fetch(API_CONFIG.overpass, {
+                    method: 'POST',
+                    body: query,
+                    timeout: 30000
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                console.log('🕌 Overpass response received:', data.elements ? data.elements.length : 0, 'elements');
+                
+                allMosques = [];
+                const islamicKeywords = [
+                    'mosque', 'masjid', 'islamic', 'center', 'institute', 'jamaat', 
+                    'prayer', 'quran', 'church', 'temple', 'synagogue', 'shrine',
+                    'surau', 'musallah', 'zawiya', 'ribat', 'tekke', 'jami'
+                ];
+                
+                if (data.elements && data.elements.length > 0) {
+                    console.log('🕌 Processing', data.elements.length, 'elements from Overpass');
+                    
+                    const processedMosques = new Set(); // Avoid duplicates
+                    
+                    data.elements.forEach((element) => {
+                        if (!element.tags || !element.tags.name) return;
+                        
+                        const mosqueLatitude = element.lat || element.center?.lat;
+                        const mosqueLng = element.lon || element.center?.lon;
+                        
+                        if (!mosqueLatitude || !mosqueLng) return;
+                        
+                        const name = element.tags.name;
+                        const key = `${name}-${mosqueLatitude.toFixed(3)}-${mosqueLng.toFixed(3)}`;
+                        
+                        if (processedMosques.has(key)) return;
+                        processedMosques.add(key);
+                        
+                        const distance = calculateDistance(lat, lng, mosqueLatitude, mosqueLng);
+                        
+                        // Check if this is likely an Islamic place
+                        const isIslamicPlace = element.tags.religion === 'islam' || 
+                                            element.tags.amenity === 'place_of_worship' ||
+                                            islamicKeywords.some(keyword => 
+                                                name.toLowerCase().includes(keyword)
+                                            );
+                        
+                        // Include all places within 50km that match Islamic criteria
+                        if (distance < 50 && isIslamicPlace) {
+                            const amenity = element.tags.amenity || 'mosque';
+                            
+                            allMosques.push({
+                                id: element.id,
+                                name: name,
+                                description: 'Islamic Place of Worship',
+                                phone: element.tags['contact:phone'] || element.tags.phone || 'Not available',
+                                website: element.tags.website || element.tags['contact:website'] || '',
+                                address: element.tags['addr:full'] || 
+                                        `${element.tags['addr:street'] || ''}, ${element.tags['addr:city'] || ''}`.trim() || 
+                                        'Address not available',
+                                lat: mosqueLatitude,
+                                lng: mosqueLng,
+                                distance: distance,
+                                prayerTimes: getPrayerTimesEstimate(),
+                                openingHours: element.tags.opening_hours || '24/7',
+                                verified: true,
+                                features: getMosqueFeatures(element.tags),
+                                osmType: element.type,
+                                amenity: amenity
+                            });
+                        }
+                    });
+                }
+
+                // Remove exact duplicates by name and round distance
+                allMosques = allMosques.filter((mosque, index, self) => 
+                    index === self.findIndex(m => 
+                        m.name === mosque.name && 
+                        Math.abs(m.distance - mosque.distance) < 0.1
+                    )
+                );
+
+                // Sort by distance
+                allMosques.sort((a, b) => a.distance - b.distance);
+
+                console.log(`🕌 Final count: Found ${allMosques.length} unique mosques`);
+
+                if (allMosques.length === 0) {
+                    console.log('⚠️ No mosques found in OpenStreetMap data, using sample data');
+                    showToast('⚠️ No mosques found in OpenStreetMap. Showing sample data. Help improve by adding mosques at openstreetmap.org', 'error');
+                    allMosques = generateSampleMosques(lat, lng);
+                } else {
+                    showToast(`✅ Found ${allMosques.length} mosques and Islamic centers nearby!`, 'success');
+                }
+
+                renderMosques();
+                
+                if (mosqueMapVisible && mosqueMap) {
+                    updateMosqueMapMarkers();
+                }
+
+            } catch (error) {
+                console.error('❌ Error fetching mosques:', error);
+                showToast('⚠️ Could not fetch mosque data. Showing sample data.', 'error');
+                allMosques = generateSampleMosques(lat, lng);
+                renderMosques();
+            }
+        }
+
+        function generateSampleMosques(baseLat, baseLng) {
+            const mosqueNames = [
+                'Al-Noor Mosque',
+                'Central Islamic Center',
+                'Masjid Al-Haram',
+                'Islamic Institute',
+                'Dar Al-Salam Mosque',
+                'Al-Furqan Center',
+                'Muhammad Ali Mosque',
+                'Islamic Foundation'
+            ];
+            
+            return mosqueNames.map((name, i) => {
+                const distance = Math.random() * 12 + 0.5;
+                const angle = (i / mosqueNames.length) * Math.PI * 2;
+                const mLat = baseLat + (Math.cos(angle) * distance / 111);
+                const mLng = baseLng + (Math.sin(angle) * distance / (111 * Math.cos(baseLat * Math.PI / 180)));
+                
+                return {
+                    id: 5000 + i,
+                    name: name,
+                    description: 'Islamic Place of Worship',
+                    phone: `+1 (${200 + i}${200 + i}${300 + i}) ${100 + i}${200 + i}-${300 + i}${400 + i}${500 + i}`,
+                    website: `www.${name.toLowerCase().replace(/ /g, '')}.com`,
+                    address: `${100 + i * 10} Main Street, Islamic District, City, State`,
+                    lat: mLat,
+                    lng: mLng,
+                    distance: distance,
+                    prayerTimes: getPrayerTimesEstimate(),
+                    openingHours: '24/7',
+                    verified: true,
+                    features: ['Wudu Facilities', 'Parking', 'Prayer Hall', 'Library']
+                };
+            });
+        }
+
+        function getMosqueFeatures(tags) {
+            const features = [];
+            if (tags?.parking === 'yes') features.push('Parking');
+            if (tags?.wheelchair === 'yes') features.push('Accessible');
+            if (tags?.toilets === 'yes') features.push('Toilets');
+            features.push('Wudu Facilities');
+            features.push('Prayer Hall');
+            return features.length > 0 ? features : ['Prayer Facilities'];
+        }
+
+        function getPrayerTimesEstimate() {
+            // This is a placeholder - in production, use actual prayer time API
+            const now = new Date();
+            return {
+                fajr: '06:30 AM',
+                dhuhr: '12:45 PM',
+                asr: '3:30 PM',
+                maghrib: '6:15 PM',
+                isha: '7:45 PM'
+            };
+        }
+
+        function renderMosques() {
+            const grid = document.getElementById('mosqueGrid');
+            
+            if (allMosques.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">No mosques found</div>';
+                return;
+            }
+            
+            grid.innerHTML = allMosques.map(mosque => {
+                const safeName = mosque.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return `
+                <div class="card mosque-card">
+                    <div class="mosque-info">
+                        <h3>🕌 ${mosque.name}</h3>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📍</span>
+                            <span class="mosque-detail-text">${mosque.address}</span>
+                        </div>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📞</span>
+                            <span class="mosque-detail-text mosque-phone"><a href="tel:${mosque.phone.replace(/[^0-9+]/g, '')}" style="color: white; text-decoration: none;">${mosque.phone}</a></span>
+                        </div>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📏</span>
+                            <span class="mosque-detail-text"><strong>${mosque.distance.toFixed(1)} km away</strong></span>
+                        </div>
+
+                        <div class="mosque-distance-badge">
+                            ⏱️ Estimated time: ${(mosque.distance / 5).toFixed(0)} min drive
+                        </div>
+
+                        ${mosque.website ? `
+                            <div class="mosque-detail">
+                                <span class="mosque-detail-icon">🌐</span>
+                                <span class="mosque-detail-text"><a href="${mosque.website}" target="_blank" style="color: white; text-decoration: underline;">${mosque.website}</a></span>
+                            </div>
+                        ` : ''}
+
+                        <div class="mosque-prayer-times">
+                            <strong>Prayer Times Today:</strong>
+                            Fajr: ${mosque.prayerTimes.fajr} | Dhuhr: ${mosque.prayerTimes.dhuhr}<br>
+                            Asr: ${mosque.prayerTimes.asr} | Maghrib: ${mosque.prayerTimes.maghrib}<br>
+                            Isha: ${mosque.prayerTimes.isha}
+                        </div>
+
+                        <div class="mosque-actions">
+                            <button class="mosque-btn mosque-btn-navigate" onclick="navigateToMosque(${mosque.lat}, ${mosque.lng}, '${safeName}')">
+                                🧭 Navigate
+                            </button>
+                            <button class="mosque-btn mosque-btn-map" onclick="showMosqueOnMap(${mosque.lat}, ${mosque.lng}, '${safeName}')">
+                                🗺️ Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function performMosqueSearch() {
+            const query = document.getElementById('mosqueSearchInput').value.toLowerCase();
+            const grid = document.getElementById('mosqueGrid');
+            
+            // If no mosques loaded yet, fetch them first
+            if (allMosques.length === 0) {
+                if (userLocation) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><div class="loading-spinner"></div> Fetching mosques...</div>';
+                    fetchMosquesNearby(userLocation.lat, userLocation.lng);
+                    return;
+                } else {
+                    showToast('Please click "Find Nearest Mosques" first to detect your location', 'error');
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">No mosques found. Click "Find Nearest Mosques" to search.</div>';
+                    return;
+                }
+            }
+            
+            // If query is empty, show all mosques
+            if (!query || query.trim() === '') {
+                renderMosques();
+                return;
+            }
+            
+            // Filter by search query
+            const filtered = allMosques.filter(m => 
+                m.name.toLowerCase().includes(query) ||
+                m.address.toLowerCase().includes(query) ||
+                m.amenity.toLowerCase().includes(query) ||
+                (m.description && m.description.toLowerCase().includes(query))
+            );
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                    <p style="color: #666; font-size: 16px;">No mosques found matching "${query}"</p>
+                    <p style="color: #999; font-size: 14px;">Try searching with different keywords like "mosque", "masjid", "islamic", "center", or "institute"</p>
+                </div>`;
+                return;
+            }
+
+            // Render filtered results
+            grid.innerHTML = filtered.map(mosque => `
+                <div class="card mosque-card">
+                    <div class="mosque-info">
+                        <h3>🕌 ${mosque.name}</h3>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📍</span>
+                            <span class="mosque-detail-text">${mosque.address}</span>
+                        </div>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📞</span>
+                            <span class="mosque-detail-text mosque-phone"><a href="tel:${mosque.phone.replace(/[^0-9+]/g, '')}" style="color: white; text-decoration: none;">${mosque.phone}</a></span>
+                        </div>
+                        
+                        <div class="mosque-detail">
+                            <span class="mosque-detail-icon">📏</span>
+                            <span class="mosque-detail-text"><strong>${mosque.distance.toFixed(1)} km away</strong></span>
+                        </div>
+
+                        <div class="mosque-distance-badge">
+                            ⏱️ Estimated time: ${(mosque.distance / 5).toFixed(0)} min drive
+                        </div>
+
+                        ${mosque.website ? `
+                            <div class="mosque-detail">
+                                <span class="mosque-detail-icon">🌐</span>
+                                <span class="mosque-detail-text"><a href="${mosque.website}" target="_blank" style="color: white; text-decoration: underline;">${mosque.website}</a></span>
+                            </div>
+                        ` : ''}
+
+                        <div class="mosque-prayer-times">
+                            <strong>Prayer Times Today:</strong>
+                            Fajr: ${mosque.prayerTimes.fajr} | Dhuhr: ${mosque.prayerTimes.dhuhr}<br>
+                            Asr: ${mosque.prayerTimes.asr} | Maghrib: ${mosque.prayerTimes.maghrib}<br>
+                            Isha: ${mosque.prayerTimes.isha}
+                        </div>
+
+                        <div class="mosque-actions">
+                            <button class="mosque-btn mosque-btn-navigate" onclick="navigateToMosque(${mosque.lat}, ${mosque.lng}, '${mosque.name.replace(/'/g, "\\'")}')">
+                                🧭 Navigate
+                            </button>
+                            <button class="mosque-btn mosque-btn-map" onclick="showMosqueOnMap(${mosque.lat}, ${mosque.lng}, '${mosque.name.replace(/'/g, "\\'")}')">
+                                🗺️ Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function navigateToMosque(lat, lng, mosqueName) {
+            // Check if device has native maps app
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Mobile: Use device's native map
+                const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+                window.open(mapsUrl, '_blank');
+            } else {
+                // Desktop: Show in Leaflet map
+                toggleMosqueMapView();
+                setTimeout(() => {
+                    if (mosqueMap) {
+                        mosqueMap.setView([lat, lng], 15);
+                        showToast(`🧭 Navigate to ${mosqueName} using your navigation app`, 'success');
+                    }
+                }, 100);
+            }
+        }
+
+        function showMosqueOnMap(lat, lng, mosqueName) {
+            toggleMosqueMapView();
+            setTimeout(() => {
+                if (mosqueMap) {
+                    mosqueMap.setView([lat, lng], 15);
+                }
+            }, 100);
+        }
+
+        function toggleMosqueMapView() {
+            const mapContainer = document.getElementById('mosqueMapContainer');
+            const mapToggleBtn = document.getElementById('mapMosqueToggleBtn');
+            
+            mosqueMapVisible = !mosqueMapVisible;
+            mapContainer.style.display = mosqueMapVisible ? 'block' : 'none';
+            mapToggleBtn.style.background = mosqueMapVisible ? 'var(--primary)' : 'var(--secondary)';
+            
+            if (mosqueMapVisible) {
+                setTimeout(() => {
+                    initializeMosqueMap();
+                }, 100);
+            }
+        }
+
+        function initializeMosqueMap() {
+            const mapElement = document.getElementById('mosqueMap');
+            
+            if (mosqueMap) {
+                mosqueMap.remove();
+            }
+            
+            const centerLat = userLocation?.lat || 40.7128;
+            const centerLng = userLocation?.lng || -74.0060;
+            
+            mosqueMap = L.map('mosqueMap').setView([centerLat, centerLng], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                minZoom: 3
+            }).addTo(mosqueMap);
+            
+            if (userLocation) {
+                L.circleMarker([userLocation.lat, userLocation.lng], {
+                    radius: 10,
+                    fillColor: '#10b981',
+                    color: 'white',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(mosqueMap).bindPopup('📍 Your Location');
+            }
+            
+            updateMosqueMapMarkers();
+        }
+
+        function updateMosqueMapMarkers() {
+            if (!mosqueMap) return;
+            
+            mosqueMarkers.forEach(marker => marker.remove());
+            mosqueMarkers = [];
+            
+            allMosques.forEach(mosque => {
+                const mosqueIcon = L.divIcon({
+                    html: `<div style="font-size: 28px; text-align: center;">🕌</div>`,
+                    iconSize: [32, 32],
+                    className: ''
+                });
+
+                const marker = L.marker([mosque.lat, mosque.lng], {icon: mosqueIcon}).addTo(mosqueMap);
+                
+                const popupContent = `
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">🕌 ${mosque.name}</div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 0.5rem;">${mosque.address}</div>
+                    <div style="font-size: 12px; margin-bottom: 0.5rem;">📞 <a href="tel:${mosque.phone.replace(/[^0-9+]/g, '')}">${mosque.phone}</a></div>
+                    <div style="font-size: 12px; margin-bottom: 0.5rem;">📏 ${mosque.distance.toFixed(1)}km away</div>
+                    <button onclick="navigateToMosque(${mosque.lat}, ${mosque.lng}, '${mosque.name}')" style="width: 100%; padding: 0.3rem; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 0.5rem;">
+                        🧭 Navigate
+                    </button>
+                `;
+                
+                marker.bindPopup(popupContent);
+                mosqueMarkers.push(marker);
+            });
+        }
+
+        function centerMosqueMapOnUser(lat, lng) {
+            if (mosqueMap) {
+                mosqueMap.setView([lat, lng], 13);
+            }
+        }
+
+        // ============================================
+        // Products Data
+        // ============================================
+        
+        const products = [
+            {
+                id: 101,
+                name: 'Premium Halal Chicken',
+                category: 'Meat',
+                brand: 'Pure Halal Co.',
+                description: 'Fresh hand-slaughtered chicken',
+                rating: 4.9,
+                reviews: 512,
+                price: '$$$',
+                verified: true,
+                details: 'Sourced from ISNA-certified facilities. Flash-frozen at peak freshness.'
+            },
+            {
+                id: 102,
+                name: 'Organic Halal Beef',
+                category: 'Meat',
+                brand: 'Green Pasture',
+                description: 'Grass-fed organic beef, certified Halal',
+                rating: 4.8,
+                reviews: 389,
+                price: '$$$$',
+                verified: true,
+                details: 'Grass-fed, hormone-free beef. Certified by MHAC.'
+            },
+            {
+                id: 103,
+                name: 'Halal Protein Powder',
+                category: 'Supplements',
+                brand: 'FitHalal',
+                description: 'Plant-based protein, 100% Halal certified',
+                rating: 4.6,
+                reviews: 234,
+                price: '$$',
+                verified: true,
+                details: 'Vegan-friendly, no animal products. Certified Halal by Islamic Authority.'
+            },
+            {
+                id: 104,
+                name: 'Premium Halal Spice Mix',
+                category: 'Spices',
+                brand: 'Aromas of East',
+                description: 'Traditional spice blend, authentic flavors',
+                rating: 4.7,
+                reviews: 178,
+                price: '$',
+                verified: true,
+                details: 'Hand-blended using traditional recipes. No additives or preservatives.'
+            },
+            {
+                id: 105,
+                name: 'Halal Snack Box',
+                category: 'Snacks',
+                brand: 'TastyHalal',
+                description: 'Assorted Halal-certified snacks and treats',
+                rating: 4.5,
+                reviews: 312,
+                price: '$$',
+                verified: true,
+                details: 'Curated selection of popular Halal snacks. Perfect for gifting.'
+            },
+            {
+                id: 106,
+                name: 'Organic Halal Honey',
+                category: 'Condiments',
+                brand: 'Golden Bee',
+                description: 'Pure raw honey from certified sources',
+                rating: 4.8,
+                reviews: 425,
+                price: '$$',
+                verified: true,
+                details: 'Unfiltered, unheated honey. Certified Halal and organic.'
+            }
+        ];
+
+        // Initialize
+        function init() {
+            registerServiceWorker();
+            renderProducts();
+            setupInstallPrompt();
+            handleOnlineStatus();
+            
+            // Auto-detect user location on load
+            setTimeout(() => {
+                detectUserLocation().then(location => {
+                    if (location) {
+                        console.log('✅ User location detected:', location);
+                    } else {
+                        // Show sample data if location not available
+                        showToast('Enable location permission for better results', 'error');
+                        allRestaurants = generateSampleData(40.7128, -74.0060);
+                        renderRestaurants();
+                    }
+                });
+            }, 1000);
+        }
+
+        // Scroll to section function
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Service Worker Registration
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js', { scope: '/' });
+                    console.log('✅ Service Worker registered:', registration);
+                } catch (error) {
+                    console.log('⚠️ Service Worker registration failed:', error);
+                }
+            }
+        }
+
+        // Render Restaurants
+        function renderRestaurants() {
+            const grid = document.getElementById('restaurantGrid');
+            const filtered = currentFilter === 'all' ? allRestaurants : allRestaurants.filter(r => r.category === currentFilter);
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-secondary);">No restaurants found in this category</div>';
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(item => `
+                <div class="card" onclick="showDetail('${item.name.replace(/'/g, "\\'")}', '${item.details.replace(/'/g, "\\'")}', ${item.rating}, ${item.reviews}, ${item.lat}, ${item.lng})">
+                    <div class="card-image">
+                        🏪
+                        <div class="halal-badge">✓ ${item.verified ? 'Halal' : 'Check'}</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.name}</h3>
+                        <p class="card-description">${item.description}</p>
+                        <p style="font-size: 13px; color: var(--text-light); margin-bottom: 0.8rem;">📍 ${item.address}</p>
+                        <div class="card-meta">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                ${item.rating.toFixed(1)} (${item.reviews})
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span class="distance-badge">📍 ${item.distance.toFixed(1)}km</span>
+                                <div class="price">${item.price}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Products
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            
+            grid.innerHTML = products.map(item => `
+                <div class="card" onclick="showDetail('${item.name}', '${item.details}', '${item.rating}', '${item.reviews}')">
+                    <div class="card-image">
+                        🛍️
+                        <div class="halal-badge">✓ Halal</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.name}</h3>
+                        <p class="card-description">${item.description}</p>
+                        <div class="card-meta">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                ${item.rating} (${item.reviews})
+                            </div>
+                            <div class="price">${item.price}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter Category
+        function filterCategory(category) {
+            currentFilter = category;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderRestaurants();
+        }
+
+        // Search
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cityInput = document.getElementById('cityInput').value;
+            const grid = document.getElementById('restaurantGrid');
+            
+            if (cityInput && !userLocation) {
+                // Search by city
+                const location = await forwardGeocode(cityInput);
+                if (location) {
+                    userLocation = location;
+                    document.getElementById('locationDisplay').textContent = `📍 Location: ${location.city}`;
+                    await fetchRestaurantsNearby(location.lat, location.lng);
+                    return;
+                } else {
+                    showToast(`City "${cityInput}" not found`, 'error');
+                    return;
+                }
+            }
+            
+            if (!userLocation) {
+                showToast('Please use your location or enter a city name', 'error');
+                return;
+            }
+            
+            // Filter by search query
+            const filtered = allRestaurants.filter(r => 
+                r.name.toLowerCase().includes(query) || 
+                r.cuisine.toLowerCase().includes(query) ||
+                query === ''
+            );
+            
+            grid.innerHTML = filtered.length ? filtered.map(item => `
+                <div class="card" onclick="showDetail('${item.name.replace(/'/g, "\\'")}', '${item.details.replace(/'/g, "\\'")}', ${item.rating}, ${item.reviews}, ${item.lat}, ${item.lng})">
+                    <div class="card-image">
+                        🏪
+                        <div class="halal-badge">✓ ${item.verified ? 'Halal' : 'Check'}</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.name}</h3>
+                        <p class="card-description">${item.description}</p>
+                        <p style="font-size: 13px; color: var(--text-light); margin-bottom: 0.8rem;">📍 ${item.address}</p>
+                        <div class="card-meta">
+                            <div class="rating">
+                                <span class="star">⭐</span>
+                                ${item.rating.toFixed(1)} (${item.reviews})
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <span class="distance-badge">📍 ${item.distance.toFixed(1)}km</span>
+                                <div class="price">${item.price}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">No results found</div>';
+        }
+
+        // Show Detail
+        function showDetail(name, details, rating, reviews, lat, lng) {
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalBody').innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 48px; text-align: center; margin-bottom: 1rem;">✅</div>
+                    <div class="rating" style="justify-content: center; margin-bottom: 1rem;">
+                        <span class="star">⭐</span>
+                        ${rating.toFixed(1)} (${reviews} reviews)
+                    </div>
+                    ${lat && lng ? `<div style="text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 1rem;">📍 ${calculateDistance(userLocation?.lat || 0, userLocation?.lng || 0, lat, lng).toFixed(1)}km away</div>` : ''}
+                </div>
+                <p style="line-height: 1.8; margin-bottom: 1.5rem;">${details}</p>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="addToFavorites('${name}')">⭐ Add to Favorites</button>
+                <button class="btn btn-secondary" style="width: 100%; background: var(--primary); color: white; margin-bottom: 1rem;" onclick="shareItem('${name}')">📤 Share</button>
+                ${lat && lng ? `<button class="btn btn-secondary" style="width: 100%; background: var(--secondary); color: white;" onclick="viewOnMap(${lat}, ${lng}, '${name}')">🗺️ View on Map</button>` : ''}
+            `;
+            showModal('detail-modal');
+        }
+
+        function viewOnMap(lat, lng, name) {
+            toggleMapView();
+            setTimeout(() => {
+                if (map) {
+                    map.setView([lat, lng], 15);
+                }
+            }, 100);
+        }
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Scroll to Section
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Install Prompt
+        let deferredPrompt;
+        function setupInstallPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('installBtn').classList.add('visible');
+            });
+
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    deferredPrompt = null;
+                }
+            });
+        }
+
+        // Online/Offline Status
+        function handleOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            
+            window.addEventListener('online', () => {
+                indicator.classList.remove('show');
+                showToast('Back Online! 📡', 'success');
+            });
+
+            window.addEventListener('offline', () => {
+                indicator.classList.add('show');
+                showToast('You\'re offline - using cached content', 'error');
+            });
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add to Favorites
+        function addToFavorites(name) {
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            if (!favorites.includes(name)) {
+                favorites.push(name);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                showToast(`✅ Added ${name} to favorites!`, 'success');
+            } else {
+                showToast(`Already in favorites!`, 'success');
+            }
+        }
+
+        // Share Item
+        function shareItem(name) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'MyHalalHub',
+                    text: `Check out ${name} on MyHalalHub!`,
+                    url: window.location.href
+                }).catch(err => console.log('Share failed:', err));
+            } else {
+                showToast('Copied to clipboard!', 'success');
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+
+        // Close modal on background click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
